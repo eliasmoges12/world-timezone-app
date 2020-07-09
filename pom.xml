@@ -38,6 +38,7 @@
 				<applicationName>worldtimezone-service123</applicationName>
 				<password>tnxtoG0d</password>
 				<muleVersion>4.3.0</muleVersion>
+				<objectStoreV2>true</objectStoreV2>
 				</cloudHubDeployment>
 				</configuration>
 			</plugin>

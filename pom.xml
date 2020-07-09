@@ -34,7 +34,6 @@
 				<username>elias062020</username>
 				<environment>Sandbox</environment>
 				<workers>1</workers>
-				<workerType>Micro</workerType>
 				<applicationName>worldtimezone-service123</applicationName>
 				<password>tnxtoG0d</password>
 				<muleVersion>4.3.0</muleVersion>

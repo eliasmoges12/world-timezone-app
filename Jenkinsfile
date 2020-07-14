@@ -10,7 +10,7 @@ stages{
 
    stage('Deploy Application To Mulesoft Cloudhub'){
    steps{
-   bat 'mvn package deploye -DmuleDeploy'
+   bat 'mvn package deploy -DmuleDeploy'
    }
    }
 

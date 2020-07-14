@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="3b2296c4-0236-4137-94cb-8c03e0b9e4cd" basePath="/getTimeZoneInfo" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="2115beca-4baa-4654-b354-47829723a9f2" basePath="/api" >
+		<http:request-connection host="worldtimeapi.org" port="80" />
+	</http:request-config>
+	<configuration doc:name="Configuration" doc:id="2bda1e5c-6fb4-42e9-98c2-3e151036951f" defaultErrorHandler-ref="Global-error-handlerError_Handler" />
+	<flow name="error-handlingFlow" doc:id="6c21a0eb-1bc1-4bc8-a579-dff911b3ea43" >
+		<http:listener doc:name="Listener" doc:id="61eaec9d-1925-4209-be89-37a2eae840bc" config-ref="HTTP_Listener_config" path="/{area}/{location}">
+			<http:error-response statusCode="#[vars.httpStatus]">
+				<http:body ><![CDATA[#[output text/json --- 
+payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="b00d69ba-3b82-490a-89b1-3bc4aab9adc3" message="#[(attributes.uriParams.area default ' ') ++ ' '++ (attributes.uriParams.location default ' ')]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="3398c7c4-9cef-4576-95d7-f6ca1d2c2ab2" name="error-handlingFlow1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="0e13ada3-da4b-4b10-90e7-5429956203da" message="End of Flow"/>
+		
+	</flow>
+	<flow name="error-handlingFlow1" doc:id="0b829862-9bfb-47bb-aca5-fa2b3fd82037" >
+		<set-variable value="#[attributes.uriParams.area]" doc:name="Set Variable" doc:id="0b5e0d59-d5ac-4ed5-9a57-1e71fb2aa753" variableName="areaVar"/>
+		<set-variable value="#[attributes.uriParams.location]" doc:name="Set Variable" doc:id="6c3fe083-9fb1-4cf2-93c6-dafa735062d2" variableName="locationVar"/>
+		<http:request method="GET" doc:name="Request" doc:id="c72ac7fc-c5ee-4b49-98c9-b60de2b5eaf5" config-ref="HTTP_Request_configuration" path="/{area}/{location}">
+			<http:uri-params ><![CDATA[#[{
+	area: vars.areaVar,
+	location: vars.locationVar
+}]]]></http:uri-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="65f5e1fd-a56a-4f27-8635-b37e1dc57ade" message="#[(vars.areaVar default ' ') ++ (vars.locationVar default ' ')]"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="51ef13bb-b220-4d35-83f0-531dfb6c45cb" type="HTTP:NOT_FOUND">
+				<set-payload value="#['Time Zone Details not foud : ' ++ (error.description default ' ')]" doc:name="Set Payload" doc:id="db09e375-e656-40bb-980c-7d7cb506851a" />
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="137bd8f4-db39-40e8-bdc8-20b16affe53a" type="HTTP:INTERNAL_SERVER_ERROR">
+				<set-payload value="#['Error Calling timezone api : ' ++ (error.description default ' ')]" doc:name="Set Payload" doc:id="cdd20f32-1757-41ef-9eb2-e12ea1d10005" />
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

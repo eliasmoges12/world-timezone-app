@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="Global-error-handlerError_Handler" doc:id="f630d0f7-8c6e-4c4b-9f39-4ee8b16b6499" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="60e940a0-88fa-40d0-a411-66dd124d5b39" >
+			<set-variable value="404" doc:name="Set Variable" doc:id="f3b10583-18d0-4afc-a6b0-6264dd0cddc8" variableName="httpStatus"/>
+			<flow-ref doc:name="Flow Reference" doc:id="7aab9f9e-a7e4-4e7a-ae07-9bc48830cb3d" name="Global-error-handlerFlow"/>
+		</on-error-propagate>
+	</error-handler>
+	<flow name="Global-error-handlerFlow" doc:id="4c475f01-2e2b-45c2-9c84-84b263889c47" >
+		<ee:transform doc:name="Transform Message" doc:id="38e0d3e7-7e8e-4259-80b7-c2776026c02f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Code" : vars.httpStatus,
+	"Type" : error.errorType.identifier,
+	"Message" : error.description
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="abb19d58-62f3-463b-bd2b-32dd18e18e20" message="#[payload]"/>
+	</flow>
+</mule>
